@@ -41,7 +41,7 @@ def training(model,train_dataset,test_dataset,max_iter,start_iter,base_lr,ckpt_f
             step_counter+=1
             set_learning_rate(step_counter,model,base_lr,solver_steps,decay_step=decay_step,decay_rate=decay_rate)
 
-            train_loss = model.train_step(x_batch_train,reconstruction_loss_weight,sigma,blur_kernel,noise_amp)
+            train_loss = model.train_step(x_batch_train,sigma,blur_kernel,noise_amp)
 
      
 

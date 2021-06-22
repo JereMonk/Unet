@@ -271,9 +271,9 @@ class Unet(tf.keras.Model):
         
         with tf.GradientTape() as tape:
           result_encoder = self.call(image_blurred,training=True)
-          loss = self.loss(image,result_encoder,self.neighbour_filter)
+          loss = self.loss(image,result_encoder)
           # REGULARISATION
-          for layer in self.encoder.layers:
+          for layer in self.layers:
             loss+=tf.math.reduce_sum(layer.losses)
     
         grads = tape.gradient(loss, self.trainable_variables)
