@@ -1,10 +1,10 @@
 import sys
 import yaml
 from getData import get_generator
-from build_Unet import build_Unet
+#from build_Unet import build_Unet
 from build_Unet import Unet
-from build_Wnet import Wnet
-from ncut_loss import compute_soft_ncuts
+#from build_Wnet import Wnet
+#from ncut_loss import compute_soft_ncuts
 import numpy as np
 import tensorflow as tf
 from trainer import training 
@@ -27,10 +27,10 @@ def main(arg):
     JSON_PATHS_TRAIN = custom_data["JSON_PATHS_TRAIN"]
     JSON_PATHS_TEST = custom_data["JSON_PATHS_TEST"]
 
-    SUBCATS = custom_data["SUBCATS"]
-    K = int(custom_data["MODEL"]["K"])
-    STAGES = (np.arange(1,int(custom_data["MODEL"]["STAGES"])+1))
-    FILTERS = int(custom_data["MODEL"]["FILTERS"])
+    #SUBCATS = custom_data["SUBCATS"]
+    #K = int(custom_data["MODEL"]["K"])
+    #STAGES = (np.arange(1,int(custom_data["MODEL"]["STAGES"])+1))
+    #FILTERS = int(custom_data["MODEL"]["FILTERS"])
     MAX_ITER = int(custom_data["SOLVER"]["MAX_ITER"])
     IMS_PER_BATCH = int(custom_data["SOLVER"]["IMS_PER_BATCH"])
     BASE_LR = float(custom_data["SOLVER"]["BASE_LR"])
