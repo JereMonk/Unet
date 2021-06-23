@@ -1,6 +1,10 @@
 import tensorflow as tf
 import tensorflow_addons as tfa
 import numpy as np
+from sklearn import cluster
+
+def rescale(image):
+    return( (((np.array(image)+1)/2)*255 ).astype("uint8") )
 
 class Unet(tf.keras.Model):
     def __init__(self,input_size,type,K,do_dropout=False,l1_reg=0,l2_reg=0):
@@ -102,7 +106,7 @@ class Unet(tf.keras.Model):
         self.BN81 = tf.keras.layers.BatchNormalization(name='BN71')
         self.ReLU81 = tf.keras.layers.ReLU()
 
-        self.conv82 = tf.keras.layers.Conv2D(filters=64,kernel_size=(3,3),strides=(1,1),padding='same',name='CONV72',kernel_regularizer=tf.keras.regularizers.L1L2(l1=l1_reg, l2=l2_reg))
+        self.conv82 = tf.keras.layers.Conv2D(filters=64,kernel_size=(3,3),strides=(1,1),padding='same',name='CONV72')
         self.BN82 = tf.keras.layers.BatchNormalization(name='BN72')
         self.ReLU82 = tf.keras.layers.ReLU()
 
@@ -262,15 +266,26 @@ class Unet(tf.keras.Model):
     @tf.function
     def train_step(self, batch_data,sigma=0.00001,blur_kernel=(10,10),noise_amp=0):
         
-        image = batch_data
-        image_blurred = tfa.image.gaussian_filter2d( image,(blur_kernel,blur_kernel),sigma)
-        noise = np.random.normal(0, noise_amp, image.shape)
-        image_blurred = image_blurred + noise
-        image_blurred = tf.clip_by_value(image_blurred, clip_value_min=-1, clip_value_max=1)
+      
+       
+        # create Kmeans batch 
+        X = np.empty(batch_data.shape,dtype=np.float32)
+        for i,image in enumerate(batch_data):
+            image_rgb = rescale(image)
+            x, y, z = image_rgb.shape
+            image_2d = image_rgb.reshape(x*y, z)
+            kmeans_cluster = cluster.KMeans(n_clusters=3)
+            kmeans_cluster.fit(image_2d)
+            cluster_centers = kmeans_cluster.cluster_centers_
+            cluster_labels = kmeans_cluster.labels_
+            kmeaned  = np.array(cluster_centers[cluster_labels]).astype(int).reshape(x, y, z)
+            image_kmeaned = np.array(((kmeaned/255)*2)-1,dtype=np.float32)
 
-        
+            X[i,] = image_kmeaned
+
+        batch_kmean = tf.convert_to_tensor(X)
         with tf.GradientTape() as tape:
-          result_encoder = self.call(image_blurred,training=True)
+          result_encoder = self.call(batch_kmean,training=True)
           loss = self.loss(image,result_encoder)
           # REGULARISATION
           for layer in self.layers:
